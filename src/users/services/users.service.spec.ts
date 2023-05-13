@@ -1,18 +1,19 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { UsersController } from './users.controller';
-import { UsersService } from '../../services/users.service';
 import { getModelToken } from '@nestjs/mongoose';
-import { User } from 'src/users/entities/user.entity';
+import { Model } from 'mongoose';
+
+import { UsersService } from './users.service';
+import { User } from '../entities/user.entity';
 
 const mockUser = {
   name: 'Alice',
   email: 'alice@email.com',
   password: '12345678',
 };
-
-describe('UsersController', () => {
-  let controller: UsersController;
+describe('UsersService', () => {
   let service: UsersService;
+  let userModel: Model<User>;
+
   const userArray = [
     {
       name: 'Alice',
@@ -28,29 +29,28 @@ describe('UsersController', () => {
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      controllers: [UsersController],
       providers: [
         UsersService,
         {
-          provide: UsersService,
+          provide: getModelToken('User'),
           useValue: {
-            getAllUsers: jest.fn().mockResolvedValue([...userArray]),
+            find: jest.fn().mockResolvedValue(mockUser), // definimos que cada
+            exec: jest.fn(), // No  definimos su comportamiento aún
           },
         },
       ],
     }).compile();
 
-    controller = module.get<UsersController>(UsersController);
     service = module.get<UsersService>(UsersService);
-  });
-
-  it('should be defined', () => {
-    expect(controller).toBeDefined();
+    userModel = module.get<Model<User>>(getModelToken(User.name));
   });
 
   describe('getAllUsers', () => {
     it('should return an array of users', async () => {
-      expect(controller.getUsers()).resolves.toEqual([...userArray]);
+      jest.spyOn(userModel, 'find').mockReturnValue({
+        exec: jest.fn().mockResolvedValueOnce(userArray), // Simulate a database call
+      } as any);
+      expect(await service.getAllUsers()).toBe(userArray); // getAllUsers por detrás ejecuta userModel.find().exec(). Cuando se ejecuta .exec() se devuelve userArray (mockResolvedValueOnce)
     });
   });
 });
