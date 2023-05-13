@@ -8,7 +8,7 @@ import {
   Post,
   Put,
 } from '@nestjs/common';
-import { UsersService } from '../../services/users.service';
+import { UsersService } from '../services/users.service';
 import { CreateUserDTO, UpdateUserDTO } from 'src/users/dto/user.dto';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { MongoIdPipe } from 'src/common/mongo-id/mongo-id.pipe';
