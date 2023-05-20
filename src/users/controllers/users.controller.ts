@@ -34,7 +34,7 @@ export class UsersController {
   @Public()
   @Get('clerktest')
   getUsersTest() {
-    const user = clerk.users.getUser();
+    const user = clerk.users.getUserList();
     return user;
   }
 
