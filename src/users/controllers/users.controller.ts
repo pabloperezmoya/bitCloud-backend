@@ -22,30 +22,10 @@ type UserResponse = {
   updatedAt?: Date;
 };
 
-import 'dotenv/config';
-import clerk from '@clerk/clerk-sdk-node';
-import { Public } from '../../auth/decorators/public.decorator';
-
 @ApiTags('users')
 @Controller('users')
 export class UsersController {
   constructor(private usersService: UsersService) {}
-
-  @Public()
-  @Get('clerktest')
-  getUsersTest() {
-    const user = clerk.users.getUserList();
-    return user;
-  }
-
-  @Public()
-  @Post('webhook/clerk/createUser')
-  handleWebhook(@Body() payload: any) {
-    // Manejar el payload del webhook aquí
-    // Implementa la lógica necesaria para procesar los eventos del webhook
-    console.log('Webhook payload:', payload);
-    return { received: true, payload };
-  }
 
   @Get()
   @ApiOperation({ summary: 'Get all users', description: 'Get all users' })

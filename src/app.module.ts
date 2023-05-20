@@ -7,6 +7,7 @@ import { ConfigModule } from '@nestjs/config';
 import { DatabaseModule } from './config/database/database.module';
 import { AuthModule } from './auth/auth.module';
 import config from './config/config';
+import { ClerkAuthModule } from './clerkAuth/clerk-auth.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import config from './config/config';
     StorageModule,
     DatabaseModule,
     AuthModule,
+    ClerkAuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],

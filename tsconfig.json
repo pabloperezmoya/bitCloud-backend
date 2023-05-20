@@ -18,7 +18,12 @@
     "forceConsistentCasingInFileNames": false,
     "noFallthroughCasesInSwitch": false,
     "paths": {
-      "@storage/*": ["src/config/storage/*"]
+      "@storageConfig/*": ["src/config/storage/*"],
+      "@config/*": ["src/config/*"],
+      "@users/*": ["src/users/*"],
+      "@common/*": ["src/common/*"],
+      "@storage/*": ["src/storage/*"],
+      "@auth/*": ["src/auth/*"]
     }
   }
 }

@@ -28,7 +28,7 @@ export class UsersService {
 
     // hash password and lowercase name
     //user.password = await argon2.hash(user.password).;
-    user.password = await bcrypt.hash(user.password, 10);
+    user.password = await bcrypt.hash(user.password, 10); // TODO: REMOVE THIS
     user.name = user.name.toLowerCase();
 
     // Create new user
