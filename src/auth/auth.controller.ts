@@ -11,8 +11,8 @@ import { AuthService } from './auth.service';
 import { Public } from './decorators/public.decorator';
 import { SignInDto, SignUpDto } from './dtos/auth.dto';
 import { ApiTags } from '@nestjs/swagger';
-import { AccessTokenResponse, ApiResponseBuilder } from 'src/common/responses';
-import { ApiDocs } from 'src/common/apiDoc/apidocs.decoratos';
+import { AccessTokenResponse, ApiResponseBuilder } from '../common/responses';
+import { ApiDocs } from '../common/apiDoc/apidocs.decoratos';
 
 @Controller('auth')
 @ApiTags('auth')

@@ -21,21 +21,21 @@ import { ApiBearerAuth, ApiProperty, ApiTags } from '@nestjs/swagger';
 import type { Response } from 'express';
 
 import { StorageService } from '../services/storage.service';
-import { type JwtPayload } from 'src/common/types';
+import { type JwtPayload } from '../../common/types';
 import {
   ApiResponse as ApiResponseType,
   UUIDResponse,
   DocumentResponse,
   DocumentResponseArray,
   URLResponse,
-} from 'src/common/responses';
-import { ApiResponseBuilder } from 'src/common/responses';
+} from '../../common/responses';
+import { ApiResponseBuilder } from '../../common/responses';
 import {
   ApiExceptionBuilder,
   FileNotFoundException,
   InternalServerErrorException,
-} from 'src/common/exceptions';
-import { ApiDocs } from 'src/common/apiDoc/apidocs.decoratos';
+} from '../../common/exceptions';
+import { ApiDocs } from '../../common/apiDoc/apidocs.decoratos';
 import { FileUploadDto } from '../dtos';
 
 @Controller('storage')

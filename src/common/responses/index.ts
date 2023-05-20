@@ -1,7 +1,7 @@
 import { HttpStatus } from '@nestjs/common';
 import { ApiProperty } from '@nestjs/swagger';
 import { IsBoolean, IsObject, IsOptional, IsString } from 'class-validator';
-import { StorageFile } from 'src/storage/entities/storage.entity';
+import { StorageFile } from '../../storage/entities/storage.entity';
 
 export class ApiResponse {
   @IsBoolean()

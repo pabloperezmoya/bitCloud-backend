@@ -1,8 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { UsersController } from './users.controller';
 import { UsersService } from '../services/users.service';
-import { getModelToken } from '@nestjs/mongoose';
-import { User } from 'src/users/entities/user.entity';
 
 const mockUser = {
   name: 'Alice',

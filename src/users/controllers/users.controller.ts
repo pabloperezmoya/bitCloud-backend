@@ -9,9 +9,9 @@ import {
   Put,
 } from '@nestjs/common';
 import { UsersService } from '../services/users.service';
-import { CreateUserDTO, UpdateUserDTO } from 'src/users/dto/user.dto';
+import { CreateUserDTO, UpdateUserDTO } from '../dto/user.dto';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { MongoIdPipe } from 'src/common/mongo-id/mongo-id.pipe';
+import { MongoIdPipe } from '../../common/mongo-id/mongo-id.pipe';
 
 type UserResponse = {
   _id: string;
@@ -24,7 +24,7 @@ type UserResponse = {
 
 import 'dotenv/config';
 import clerk from '@clerk/clerk-sdk-node';
-import { Public } from 'src/auth/decorators/public.decorator';
+import { Public } from '../../auth/decorators/public.decorator';
 
 @ApiTags('users')
 @Controller('users')
