@@ -38,6 +38,7 @@ export class UsersController {
     return user;
   }
 
+  @Public()
   @Post('webhook/clerk/createUser')
   handleWebhook(@Body() payload: any) {
     // Manejar el payload del webhook aquí
