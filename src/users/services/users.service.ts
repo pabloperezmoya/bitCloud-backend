@@ -1,17 +1,16 @@
-import { Injectable, Inject, HttpException, HttpStatus } from '@nestjs/common';
+import * as bcrypt from 'bcrypt';
 import { Model } from 'mongoose';
+
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 
-import { User } from '../entities/user.entity';
 import { CreateUserDTO, UpdateUserDTO } from '../dto/user.dto';
-import { type Storage } from '@storage/types/storage';
-
-import * as bcrypt from 'bcrypt';
+import { User } from '../entities/user.entity';
 
 @Injectable()
 export class UsersService {
   constructor(
-    @InjectModel(User.name) private userModel: Model<User>, // Injecting the model // Delete the following line //@Inject('STORAGE') private storage: Storage, // Injecting the storage service
+    @InjectModel(User.name) private userModel: Model<User>, // Injecting the model // Delete the following line
   ) {}
 
   async getAllUsers() {

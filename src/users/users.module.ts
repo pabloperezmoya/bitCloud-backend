@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { UsersController } from './controllers/users.controller';
 import { UsersService } from './services/users.service';
-import { StorageModule } from '../config/storage/storage.module';
+import { StorageModule as configStorageModule } from '../config/storage/storage.module';
 import { User, UserSchema } from './entities/user.entity';
 import { MongooseModule } from '@nestjs/mongoose';
 
@@ -13,7 +13,7 @@ import { MongooseModule } from '@nestjs/mongoose';
         schema: UserSchema,
       },
     ]),
-    StorageModule,
+    configStorageModule,
   ],
   controllers: [UsersController],
   providers: [UsersService],

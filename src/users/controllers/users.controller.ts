@@ -22,12 +22,24 @@ type UserResponse = {
   updatedAt?: Date;
 };
 
+import 'dotenv/config';
+import clerk from '@clerk/clerk-sdk-node';
+import { Public } from 'src/auth/decorators/public.decorator';
+
 @ApiTags('users')
 @Controller('users')
 export class UsersController {
   constructor(private usersService: UsersService) {}
+
+  @Public()
+  @Get('clerktest')
+  getUsersTest() {
+    const user = clerk.users.getUser();
+    return user;
+  }
+
   @Get()
-  @ApiOperation({ summary: 'Get all users' })
+  @ApiOperation({ summary: 'Get all users', description: 'Get all users' })
   getUsers(): Promise<UserResponse[]> {
     return this.usersService.getAllUsers();
   }
