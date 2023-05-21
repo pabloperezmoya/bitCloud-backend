@@ -21,7 +21,7 @@ import { ApiBearerAuth, ApiProperty, ApiTags } from '@nestjs/swagger';
 import type { Response } from 'express';
 
 import { StorageService } from '../services/storage.service';
-import { type JwtPayload } from '../../common/types';
+import { JwtPayload } from '../../common/types';
 import {
   ApiResponse as ApiResponseType,
   UUIDResponse,

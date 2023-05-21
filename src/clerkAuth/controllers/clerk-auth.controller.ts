@@ -1,5 +1,5 @@
 import { Body, Controller, Get, Post, Req } from '@nestjs/common';
-import { Public } from '@auth/decorators/public.decorator';
+import { Public } from '../../auth/decorators/public.decorator';
 import { ClerkPayload } from '../dto/clerk-auth.dto';
 import { ClerkAuthService } from '../services/clerk-auth.service';
 import { Request } from 'express';

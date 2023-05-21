@@ -5,7 +5,7 @@ import {
 } from '@aws-sdk/client-s3';
 import { Inject, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { type Storage } from '@storageConfig/types/storage';
+import { Storage } from '../../config/storage/types/storage';
 import { Model } from 'mongoose';
 import { v4 as uuid4 } from 'uuid';
 import { StorageFile } from '../entities/storage.entity';

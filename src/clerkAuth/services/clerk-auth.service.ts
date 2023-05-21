@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 
-import { CreateUserDTO } from '@users/dto/user.dto';
-import { UsersService } from '@users/services/users.service';
+import { CreateUserDTO } from '../../users/dto/user.dto';
+import { UsersService } from '../../users/services/users.service';
 
 import clerk from '@clerk/clerk-sdk-node';
 import 'dotenv/config';
