@@ -16,14 +16,14 @@
     "noImplicitAny": false,
     "strictBindCallApply": false,
     "forceConsistentCasingInFileNames": false,
-    "noFallthroughCasesInSwitch": false,
-    "paths": {
-      "@storageConfig/*": ["src/config/storage/*"],
-      "@config/*": ["src/config/*"],
-      "@users/*": ["src/users/*"],
-      "@common/*": ["src/common/*"],
-      "@storage/*": ["src/storage/*"],
-      "@auth/*": ["src/auth/*"]
-    }
+    "noFallthroughCasesInSwitch": false
+    // "paths": {
+    //   "@storageConfig/*": ["src/config/storage/*"],
+    //   "@config/*": ["src/config/*"],
+    //   "@users/*": ["src/users/*"],
+    //   "@common/*": ["src/common/*"],
+    //   "@storage/*": ["src/storage/*"],
+    //   "@auth/*": ["src/auth/*"]
+    // }
   }
 }

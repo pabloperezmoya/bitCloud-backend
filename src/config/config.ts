@@ -17,4 +17,7 @@ export default registerAs('config', () => ({
     secretAccessKey: process.env.SECRET_ACCESS_KEY,
     bucketRegion: process.env.REGION,
   },
+  clerk: {
+    clerkWebhookSignInSecret: process.env.CLERK_WEBHOOK_SIGN_IN_SECRET,
+  },
 }));

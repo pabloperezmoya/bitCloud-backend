@@ -21,7 +21,7 @@ export class UserDTO {
 export class CreateUserDTO {
   @IsString()
   @ApiProperty({ example: 'user_34325hjsdkhfjksaf' })
-  id: string;
+  _id: string;
 
   @IsString()
   @ApiProperty({ example: 'John Doe' })

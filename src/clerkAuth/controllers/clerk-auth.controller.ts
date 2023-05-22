@@ -1,38 +1,35 @@
-import { Body, Controller, Get, Post, Req } from '@nestjs/common';
+import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
 import { Public } from '../../auth/decorators/public.decorator';
 import { ClerkPayload } from '../dto/clerk-auth.dto';
 import { ClerkAuthService } from '../services/clerk-auth.service';
-import { Request } from 'express';
+
+import { WebhookGuard } from '../guards/webhook.guard';
 
 @Controller('clerk-auth-webhook')
 export class ClerkAuthController {
   constructor(private clerkAuthService: ClerkAuthService) {}
 
   @Public()
+  @UseGuards(WebhookGuard)
   @Post('oncreateuser')
-  async onCreateUser(@Body() payload: ClerkPayload, @Req() req: Request) {
-    // Recieve webhook from Clerk
-    // Create user in database
-    // use UserService
-    console.log(req.headers);
-    return req.headers;
-    // const username = payload.data.username;
-    // const primary_email_address_id = payload.data.primary_email_address_id;
-    // const email = payload.data.email_addresses.find(
-    //   (email) => email.id === primary_email_address_id,
-    // ).email_address;
+  async onCreateUser(@Body() payload: ClerkPayload) {
+    const username = payload.data.username;
+    const primary_email_address_id = payload.data.primary_email_address_id;
+    const email = payload.data.email_addresses.find(
+      (email) => email.id === primary_email_address_id,
+    ).email_address;
 
-    // const id = payload.data.id;
-    // const createdAt = payload.data.created_at;
+    const id = payload.data.id;
+    const createdAt = payload.data.created_at;
 
-    // const userPayload = {
-    //   id,
-    //   name: username,
-    //   password: 'clerk',
-    //   email,
-    //   createdAt,
-    // };
-    // return this.clerkAuthService.createUser(userPayload);
+    const userPayload = {
+      _id: id,
+      name: username,
+      password: 'clerk',
+      email,
+      createdAt,
+    };
+    return this.clerkAuthService.createUser(userPayload);
   }
 
   @Public()
