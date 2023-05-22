@@ -34,7 +34,9 @@ export class WebhookGuard implements CanActivate {
         .digest('base64'),
     );
 
-    if (signature !== svix_signature) {
+    console.log({ signature, svix_signature, svix_id, svix_timestamp, body });
+
+    if (signature !== svix_signature.split(' ')[0]) {
       return false;
     }
     return true;

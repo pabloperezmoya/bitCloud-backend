@@ -23,6 +23,9 @@ export class User extends Document {
 
   @Prop()
   authMethod: AuthMethods;
+
+  @Prop()
+  folders?: string[];
 }
 
 export enum AuthMethods {

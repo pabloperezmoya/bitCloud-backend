@@ -53,7 +53,7 @@ export class UsersController {
     @Param('id', MongoIdPipe) id: string,
     @Body() userPayload: UpdateUserDTO,
   ): Promise<UserResponse> {
-    return this.usersService.updateUser(id, userPayload);
+    return this.usersService.updateUser({ userId: id }, userPayload);
   }
 
   @Delete(':id')

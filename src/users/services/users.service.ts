@@ -36,7 +36,7 @@ export class UsersService {
     return newUser.save();
   }
 
-  async updateUser(id: string, userPayload: UpdateUserDTO) {
+  async updateUser(findBy: object, userPayload: UpdateUserDTO) {
     // lowercase name
     if (userPayload.name) {
       userPayload.name = userPayload.name.toLowerCase();
@@ -47,7 +47,7 @@ export class UsersService {
     }
 
     const user = await this.userModel
-      .findByIdAndUpdate(id, { $set: userPayload }, { new: true })
+      .findOneAndUpdate(findBy, { $set: userPayload }, { new: true })
       .exec();
 
     if (!user) {

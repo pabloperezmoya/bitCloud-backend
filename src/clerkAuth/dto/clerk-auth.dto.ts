@@ -1,7 +1,18 @@
+export enum EventType {
+  USER_UPDATED = 'user.updated',
+  USER_CREATED = 'user.created',
+}
+
+export type ParcialPayload = {
+  userId: string;
+  name: string;
+  email: string;
+};
+
 export type ClerkPayload = {
   data: Data;
   object: string;
-  type: string;
+  type: EventType;
 };
 
 type emailAddress = {
