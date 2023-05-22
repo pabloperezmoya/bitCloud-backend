@@ -4,6 +4,9 @@ import { ClerkPayload } from '../dto/clerk-auth.dto';
 import { ClerkAuthService } from '../services/clerk-auth.service';
 
 import { WebhookGuard } from '../guards/webhook.guard';
+import { AuthMethods } from '../../users/entities/user.entity';
+
+import * as bcrypt from 'bcrypt';
 
 @Controller('clerk-auth-webhook')
 export class ClerkAuthController {
@@ -22,11 +25,17 @@ export class ClerkAuthController {
     const id = payload.data.id;
     const createdAt = payload.data.created_at;
 
+    const genericPasswd = await bcrypt.hash(
+      createdAt.toString() + username + email,
+      10,
+    );
+
     const userPayload = {
-      _id: id,
+      userId: id,
       name: username,
-      password: 'clerk',
       email,
+      password: genericPasswd,
+      authMethod: AuthMethods.CLERK,
       createdAt,
     };
     return this.clerkAuthService.createUser(userPayload);

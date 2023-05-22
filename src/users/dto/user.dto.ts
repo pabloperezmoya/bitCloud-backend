@@ -1,5 +1,4 @@
 import {
-  IsDateString,
   IsEmail,
   IsNumber,
   IsOptional,
@@ -7,6 +6,7 @@ import {
   Length,
 } from 'class-validator';
 import { ApiProperty, PartialType } from '@nestjs/swagger';
+import { AuthMethods } from '../entities/user.entity';
 
 export class UserDTO {
   @IsString()
@@ -21,7 +21,7 @@ export class UserDTO {
 export class CreateUserDTO {
   @IsString()
   @ApiProperty({ example: 'user_34325hjsdkhfjksaf' })
-  _id: string;
+  userId: string;
 
   @IsString()
   @ApiProperty({ example: 'John Doe' })
@@ -35,6 +35,9 @@ export class CreateUserDTO {
   @Length(6)
   @ApiProperty({ example: '123456' })
   password: string;
+
+  @IsString()
+  authMethod: AuthMethods;
 
   @IsNumber()
   @IsOptional()

@@ -4,7 +4,7 @@ import { Document } from 'mongoose';
 @Schema()
 export class User extends Document {
   @Prop({ required: true, unique: true })
-  _id: string;
+  userId: string;
 
   @Prop({ required: true })
   name: string;
@@ -20,6 +20,14 @@ export class User extends Document {
 
   @Prop()
   updatedAt: Date;
+
+  @Prop()
+  authMethod: AuthMethods;
+}
+
+export enum AuthMethods {
+  CLERK = 'clerkdev',
+  LOCAL = 'local',
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
