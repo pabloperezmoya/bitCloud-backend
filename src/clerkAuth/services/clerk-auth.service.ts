@@ -3,8 +3,6 @@ import { Injectable } from '@nestjs/common';
 import { CreateUserDTO, UpdateUserDTO } from '../../users/dto/user.dto';
 import { UsersService } from '../../users/services/users.service';
 
-import clerk from '@clerk/clerk-sdk-node';
-import 'dotenv/config';
 import { ClerkPayload, ParcialPayload } from '../dto/clerk-auth.dto';
 
 @Injectable()
