@@ -2,6 +2,7 @@ import { HttpStatus } from '@nestjs/common';
 import { ApiProperty } from '@nestjs/swagger';
 import { IsBoolean, IsObject, IsOptional, IsString } from 'class-validator';
 import { StorageFile } from '../../storage/entities/storage.entity';
+import { User } from '../../users/entities/user.entity';
 
 export class ApiResponse {
   @IsBoolean()
@@ -58,6 +59,35 @@ export class DocumentResponse extends ApiResponse {
     },
   })
   data?: StorageFile;
+}
+
+export class UserResponse extends ApiResponse {
+  @IsObject()
+  @ApiProperty({
+    example: {
+      _id: '646bc8e8f7ba2b44XXXXXXX',
+      userId: 'user_2QA9BZZZZZZZZZZZZZZ',
+      name: 'John',
+      email: 'test@test.com',
+      password: '$2b$10$SXXXXXXSSSSSSS',
+      createdAt: '2023-05-22T19:56:21.248Z',
+      authMethod: 'clerkdev',
+      folders: [],
+      __v: 0,
+      updatedAt: '2023-05-22T19:58:21.219Z',
+    },
+  })
+  data?: User;
+}
+
+export class UserPropertyResponse extends ApiResponse {
+  @IsObject()
+  @ApiProperty({
+    example: {
+      name: 'John',
+    },
+  })
+  data?: Partial<User>;
 }
 
 export class DocumentResponseArray extends ApiResponse {

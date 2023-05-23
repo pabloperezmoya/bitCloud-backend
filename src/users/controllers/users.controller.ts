@@ -1,26 +1,24 @@
 import {
-  Body,
   Controller,
-  Delete,
   Get,
   HttpStatus,
+  InternalServerErrorException,
   Param,
   Post,
-  Put,
+  Request,
 } from '@nestjs/common';
 import { UsersService } from '../services/users.service';
-import { CreateUserDTO, UpdateUserDTO } from '../dto/user.dto';
-import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { MongoIdPipe } from '../../common/mongo-id/mongo-id.pipe';
+import { ApiDocs } from 'src/common/apiDoc/apidocs.decoratos';
+import { JwtPayload } from '../../common/types';
+import { ApiTags } from '@nestjs/swagger';
+import {
+  DocumentResponse,
+  UserPropertyResponse,
+  UserResponse,
+} from '../../common/responses';
 
-type UserResponse = {
-  _id: string;
-  name: string;
-  email: string;
-  password: string;
-  createdAt: Date;
-  updatedAt?: Date;
-};
+import { ApiResponseBuilder } from '../../common/responses';
+import { exec } from 'child_process';
 
 @ApiTags('users')
 @Controller('users')
@@ -28,51 +26,62 @@ export class UsersController {
   constructor(private usersService: UsersService) {}
 
   @Get()
-  @ApiOperation({ summary: 'Get all users', description: 'Get all users' })
-  getUsers(): Promise<UserResponse[]> {
-    return this.usersService.getAllUsers();
+  @ApiDocs({
+    operationSummary: 'Get a user by a userId',
+    operationDescription:
+      '## Get a user by a userId embedded in the JWT token \n' +
+      '📥 Receive ➡️ JWT Token (Header🔒) <br/> ' +
+      '📦 Returns ➡️ FileDocument',
+    responseStatus: HttpStatus.OK,
+    responseDescription: 'OK',
+    responseType: UserResponse,
+  })
+  async getUserData(@Request() req: JwtPayload) {
+    const user = await this.usersService.getUser({ userId: req.user.sub });
+    return new ApiResponseBuilder().data(user).build();
   }
 
-  @Post()
-  @ApiOperation({ summary: 'Create a user' })
-  @ApiResponse({
-    status: HttpStatus.CONFLICT,
-    description: 'User Already Exists',
+  @Get('folders')
+  @ApiDocs({
+    operationSummary: 'Get folders of a user by a userId',
+    operationDescription:
+      '## Get folders of a user by a userId embedded in the JWT token \n' +
+      '📥 Receive ➡️ JWT Token (Header🔒) <br/> ' +
+      '📦 Returns ➡️ FileDocument[]',
+    responseStatus: HttpStatus.OK,
+    responseDescription: 'OK',
+    responseType: UserPropertyResponse,
   })
-  createUser(@Body() user: CreateUserDTO): Promise<UserResponse> {
-    return this.usersService.createUser(user);
+  async getUserFolders(@Request() req: JwtPayload) {
+    let folders;
+    try {
+      folders = await this.usersService.getUserFolders(req.user.sub);
+    } catch (err) {
+      throw new InternalServerErrorException(err);
+    }
+    return new ApiResponseBuilder().data({ folders }).build();
   }
 
-  @Put(':id')
-  @ApiOperation({ summary: 'Update a user' })
-  @ApiResponse({
-    status: HttpStatus.NOT_FOUND,
-    description: 'User Does Not Exist',
+  @Post('folders/:folderName')
+  @ApiDocs({
+    operationSummary: 'Create a folder for a user by a userId',
+    operationDescription:
+      '## Create a folder for a user by a userId embedded in the JWT token \n' +
+      '📥 Receive ➡️ JWT Token (Header🔒) <br/> ' +
+      '📦 Returns ➡️ FileDocument',
+    responseStatus: HttpStatus.CREATED,
+    responseDescription: 'Created',
   })
-  updateUser(
-    @Param('id', MongoIdPipe) id: string,
-    @Body() userPayload: UpdateUserDTO,
-  ): Promise<UserResponse> {
-    return this.usersService.updateUser({ userId: id }, userPayload);
-  }
+  async createUserFolder(
+    @Request() req: JwtPayload,
+    @Param('folderName') folderName: string,
+  ) {
+    try {
+      await this.usersService.createUserFolder(req.user.sub, folderName);
+    } catch (err) {
+      throw new InternalServerErrorException(err);
+    }
 
-  @Delete(':id')
-  @ApiOperation({ summary: 'Delete a user' })
-  @ApiResponse({
-    status: HttpStatus.NOT_FOUND,
-    description: 'User Does Not Exist',
-  })
-  deleteUser(@Param('id', MongoIdPipe) id: string): Promise<UserResponse> {
-    return this.usersService.deleteUser(id);
-  }
-
-  @Get(':email')
-  @ApiOperation({ summary: 'Get a user by email' })
-  @ApiResponse({
-    status: HttpStatus.NOT_FOUND,
-    description: 'User Does Not Exist',
-  })
-  getUserByEmail(@Param('email') email: string): Promise<UserResponse> {
-    return this.usersService.getUserByEmail(email);
+    return new ApiResponseBuilder().build();
   }
 }

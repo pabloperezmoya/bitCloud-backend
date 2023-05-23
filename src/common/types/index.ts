@@ -2,7 +2,6 @@ import { HttpStatus } from '@nestjs/common';
 
 export type JwtPayload = {
   user: {
-    email: string;
     sub: string;
   };
 };

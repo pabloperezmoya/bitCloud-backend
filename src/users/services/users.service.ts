@@ -71,4 +71,34 @@ export class UsersService {
     }
     return user;
   }
+
+  async getUser(findBy: object) {
+    const user = await this.userModel.findOne(findBy).exec();
+    if (!user) {
+      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+    }
+    return user;
+  }
+
+  async getUserFolders(userId: string) {
+    const user = await this.userModel.findOne({ userId }).exec();
+    if (!user) {
+      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+    }
+    return user.folders;
+  }
+
+  async createUserFolder(userId: string, folderName: string) {
+    const user = await this.userModel.findOne({ userId }).exec();
+    if (!user) {
+      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+    }
+    // verify if folder already exists
+    if (user.folders.includes(folderName)) {
+      throw new HttpException('Folder already exists', HttpStatus.BAD_REQUEST);
+    }
+
+    user.folders.push(folderName);
+    user.save();
+  }
 }
