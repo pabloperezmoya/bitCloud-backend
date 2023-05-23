@@ -1,5 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
+import { Document, Types } from 'mongoose';
+import { Folder } from '../../folders/entities/folder.entity';
 
 @Schema()
 export class User extends Document {
@@ -24,8 +25,8 @@ export class User extends Document {
   @Prop()
   authMethod: AuthMethods;
 
-  @Prop()
-  folders?: string[];
+  @Prop({ type: [{ type: Types.ObjectId, ref: Folder.name }] })
+  folders?: Types.ObjectId[];
 }
 
 export enum AuthMethods {

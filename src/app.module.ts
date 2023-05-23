@@ -8,6 +8,7 @@ import { DatabaseModule } from './config/database/database.module';
 import { AuthModule } from './auth/auth.module';
 import config from './config/config';
 import { ClerkAuthModule } from './clerkAuth/clerk-auth.module';
+import { FoldersModule } from './folders/folders.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { ClerkAuthModule } from './clerkAuth/clerk-auth.module';
     DatabaseModule,
     AuthModule,
     ClerkAuthModule,
+    FoldersModule,
   ],
   controllers: [AppController],
   providers: [AppService],

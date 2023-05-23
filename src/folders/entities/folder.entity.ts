@@ -1,7 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
-import { StorageFile } from 'src/storage/entities/storage.entity';
-import { User } from './user.entity';
+import { StorageFile } from '../../storage/entities/storage.entity';
 
 enum Permission {
   READ = 'read',
@@ -18,7 +17,7 @@ type SharedWith = {
 
 @Schema()
 export class Folder extends Document {
-  @Prop({ type: Types.ObjectId, ref: User.name, required: true })
+  @Prop({ type: Types.ObjectId, ref: 'User', required: true })
   ownerId: string;
 
   @Prop({ required: true })
@@ -37,4 +36,4 @@ export class Folder extends Document {
   updatedAt?: Date;
 }
 
-export const UserSchema = SchemaFactory.createForClass(Folder);
+export const FolderSchema = SchemaFactory.createForClass(Folder);

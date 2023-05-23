@@ -1,7 +1,12 @@
 import * as bcrypt from 'bcrypt';
 import { Model } from 'mongoose';
 
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import {
+  ConflictException,
+  HttpException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 
 import { CreateUserDTO, UpdateUserDTO } from '../dto/user.dto';
@@ -9,9 +14,7 @@ import { User } from '../entities/user.entity';
 
 @Injectable()
 export class UsersService {
-  constructor(
-    @InjectModel(User.name) private userModel: Model<User>, // Injecting the model // Delete the following line
-  ) {}
+  constructor(@InjectModel(User.name) private userModel: Model<User>) {}
 
   async getAllUsers() {
     return this.userModel.find().exec();
@@ -23,7 +26,7 @@ export class UsersService {
       .findOne({ email: user.email })
       .exec();
     if (userLookup) {
-      throw new HttpException('User already exists', HttpStatus.CONFLICT);
+      throw new NotFoundException('User not found');
     }
 
     // hash password and lowercase name
@@ -51,7 +54,7 @@ export class UsersService {
       .exec();
 
     if (!user) {
-      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+      throw new NotFoundException('User not found');
     }
     return user;
   }
@@ -59,7 +62,7 @@ export class UsersService {
   async deleteUser(id: string) {
     const user = await this.userModel.findByIdAndDelete(id).exec();
     if (!user) {
-      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+      throw new NotFoundException('User not found');
     }
     return user;
   }
@@ -67,7 +70,7 @@ export class UsersService {
   async getUserByEmail(email: string) {
     const user = await this.userModel.findOne({ email }).exec();
     if (!user) {
-      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+      throw new NotFoundException('User not found');
     }
     return user;
   }
@@ -75,30 +78,26 @@ export class UsersService {
   async getUser(findBy: object) {
     const user = await this.userModel.findOne(findBy).exec();
     if (!user) {
-      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+      throw new NotFoundException('User not found');
     }
     return user;
   }
 
-  async getUserFolders(userId: string) {
-    const user = await this.userModel.findOne({ userId }).exec();
-    if (!user) {
-      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
-    }
-    return user.folders;
-  }
-
-  async createUserFolder(userId: string, folderName: string) {
-    const user = await this.userModel.findOne({ userId }).exec();
-    if (!user) {
-      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
-    }
-    // verify if folder already exists
-    if (user.folders.includes(folderName)) {
-      throw new HttpException('Folder already exists', HttpStatus.BAD_REQUEST);
+  async getAllUserFolders(userId: string, populateFolders = false) {
+    let folders;
+    if (!populateFolders) {
+      folders = await this.userModel
+        .findOne({ userId })
+        .select('folders')
+        .exec();
+    } else {
+      folders = await this.userModel
+        .findOne({ userId })
+        .select('folders')
+        .populate('folders')
+        .exec();
     }
 
-    user.folders.push(folderName);
-    user.save();
+    return folders;
   }
 }

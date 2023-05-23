@@ -7,8 +7,8 @@ export class StorageFile extends Document {
   @Prop({ required: true, unique: true })
   fileKey: string;
 
-  @Prop({ type: Types.ObjectId, ref: User.name, required: true })
-  userId: User | Types.ObjectId;
+  @Prop({ type: Types.ObjectId, ref: 'User', required: true })
+  userId: Types.ObjectId;
 
   @Prop({ required: true })
   originalName: string;

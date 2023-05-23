@@ -1,8 +1,8 @@
-import { HttpStatus } from '@nestjs/common';
 import { ApiProperty } from '@nestjs/swagger';
 import { IsBoolean, IsObject, IsOptional, IsString } from 'class-validator';
 import { StorageFile } from '../../storage/entities/storage.entity';
 import { User } from '../../users/entities/user.entity';
+import { Folder } from '../../folders/entities/folder.entity';
 
 export class ApiResponse {
   @IsBoolean()
@@ -59,6 +59,49 @@ export class DocumentResponse extends ApiResponse {
     },
   })
   data?: StorageFile;
+}
+
+export class FolderResponse extends ApiResponse {
+  @IsObject()
+  @ApiProperty({
+    example: {
+      _id: '646c1073939ad10f362ZZZZZZ',
+      ownerId: 'user_2QA9BJmt82tCuOZoOBAUXXXXXX',
+      folderName: 'Perros',
+      files: [],
+      sharedWith: [],
+      createdAt: '2023-05-23T01:01:39.877Z',
+      __v: 0,
+    },
+  })
+  data?: Folder;
+}
+
+export class FolderResponseArray extends ApiResponse {
+  @IsObject()
+  @ApiProperty({
+    example: [
+      {
+        _id: '646c1073939ad10f362ZZZZZZ',
+        ownerId: 'user_2QA9BJmt82tCuOZoOBAUXXXXXX',
+        folderName: 'Perros',
+        files: [],
+        sharedWith: [],
+        createdAt: '2023-05-23T01:01:39.877Z',
+        __v: 0,
+      },
+      {
+        _id: '646c1073939ad10f362ZZZZZZ',
+        ownerId: 'user_2QA9BJmt82tCuOZoOBAUXXXXXX',
+        folderName: 'Gatos',
+        files: [],
+        sharedWith: [],
+        createdAt: '2023-05-23T01:01:39.877Z',
+        __v: 0,
+      },
+    ],
+  })
+  data?: Folder[];
 }
 
 export class UserResponse extends ApiResponse {
