@@ -7,8 +7,8 @@ export class StorageFile extends Document {
   @Prop({ required: true, unique: true })
   fileKey: string;
 
-  @Prop({ type: Types.ObjectId, ref: 'User', required: true })
-  userId: Types.ObjectId;
+  @Prop({ type: String, ref: 'User', required: true })
+  userId: string;
 
   @Prop({ required: true })
   originalName: string;
@@ -30,6 +30,9 @@ export class StorageFile extends Document {
 
   @Prop()
   sharedWith?: string[];
+
+  @Prop({ type: Types.ObjectId, ref: 'Folder' })
+  folderId: Types.ObjectId;
 }
 
 export const StorageFileSchema = SchemaFactory.createForClass(StorageFile);

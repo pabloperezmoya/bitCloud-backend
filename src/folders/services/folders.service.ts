@@ -7,6 +7,8 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Folder } from '../entities/folder.entity';
 import { Model } from 'mongoose';
 import { UsersService } from '../../users/services/users.service';
+import { Types } from 'mongoose';
+import { DefaultFolders } from '../../auth/constants';
 
 @Injectable()
 export class FoldersService {
@@ -14,6 +16,46 @@ export class FoldersService {
     @InjectModel(Folder.name) private folderModel: Model<Folder>,
     private usersService: UsersService,
   ) {}
+
+  async addFileToRootFolder(fileId: string, userId: string) {
+    const folderName = DefaultFolders.ROOT;
+    const folder = await this.getFolderByName(folderName, userId);
+
+    if (!folder) {
+      throw new NotFoundException('Folder not found');
+    }
+    this.addFileToFolder(folder._id, fileId);
+  }
+
+  async addFileToSharedFolder(fileId: string, userId: string) {
+    const folderName = DefaultFolders.SHARED;
+    const folder = await this.getFolderByName(folderName, userId);
+    if (!folder) {
+      throw new NotFoundException('Folder not found');
+    }
+    this.addFileToFolder(folder._id, fileId);
+  }
+
+  async addFileToFolder(folderId: string, fileId: string) {
+    const folder = await this.folderModel.findByIdAndUpdate(folderId, {
+      $push: { files: fileId },
+    });
+  }
+
+  async removeFileFromSharedFolder(fileId: string, userId: string) {
+    const folderName = DefaultFolders.SHARED;
+    const folder = await this.getFolderByName(folderName, userId);
+    if (!folder) {
+      throw new NotFoundException('Folder not found');
+    }
+    this.removeFileFromFolder(folder._id, fileId);
+  }
+
+  async removeFileFromFolder(folderId: string, fileId: string) {
+    await this.folderModel.findByIdAndUpdate(folderId, {
+      $pull: { files: fileId },
+    });
+  }
 
   async getFolder(userId: string, folderName) {
     const folder = await this.getFolderByName(folderName, userId);

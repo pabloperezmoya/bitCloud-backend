@@ -33,10 +33,10 @@ import { ApiResponseBuilder } from '../../common/responses';
 import {
   ApiExceptionBuilder,
   FileNotFoundException,
-  InternalServerErrorException,
 } from '../../common/exceptions';
 import { ApiDocs } from '../../common/apiDoc/apidocs.decoratos';
 import { FileUploadDto } from '../dtos';
+import { FolderNamePipe } from '../../folders/pipes/pipes.pipe';
 
 @Controller('storage')
 @ApiTags('storage')
@@ -45,7 +45,7 @@ export class StorageController {
   constructor(private storageService: StorageService) {}
 
   // Upload a file to user storage
-  @Post('upload')
+  @Post('upload/:folderName')
   @UseInterceptors(FileInterceptor('file'))
   @HttpCode(HttpStatus.CREATED)
   @ApiDocs({
@@ -65,28 +65,36 @@ export class StorageController {
   async uploadFile(
     @UploadedFile() file: Express.Multer.File,
     @Request() req: JwtPayload,
+    @Param('folderName', FolderNamePipe) folderName: string,
   ): Promise<UUIDResponse | ApiResponseType> {
-    let fileId;
+    let fileKey;
     try {
-      // check if user exists
-
       // Save file to user storage
-      fileId = await this.storageService.saveFile(file);
+      fileKey = await this.storageService.saveFile(file);
       // Save to database the storageKey, userID(ref), originalName, mimetype, size.
-      await this.storageService.saveToDatabase(fileId, req.user.sub, file);
+      this.storageService.saveToDatabase(
+        fileKey,
+        req.user.sub,
+        file,
+        folderName,
+      );
     } catch (err) {
       // If a error occurs, delete the file from user storage
-      if (fileId) {
-        await this.storageService.deleteFile(fileId);
+      if (fileKey) {
+        await this.storageService.deleteFile(fileKey);
+        // Delete file from database
+        await this.storageService.deleteFileFromDatabase(req.user.sub, fileKey);
       }
-      // Throw a error
-      throw new InternalServerErrorException();
+
+      throw new ApiExceptionBuilder(HttpStatus.CONFLICT)
+        .message(err.message)
+        .build();
     }
 
-    return new ApiResponseBuilder().data({ fileId }).build();
+    return new ApiResponseBuilder().data({ fileKey }).build();
   }
 
-  @Delete(':fileId')
+  @Delete(':fileKey')
   @HttpCode(HttpStatus.OK)
   @ApiDocs({
     operationSummary: 'Delete a file from user storage',
@@ -100,106 +108,24 @@ export class StorageController {
   })
   async deleteFile(
     @Request() req: JwtPayload,
-    @Param('fileId') fileId: string,
+    @Param('fileKey') fileKey: string,
   ): Promise<ApiResponseType> {
-    // Delete file from database
-    const dbRecord = await this.storageService.deleteFileFromDatabase(
-      req.user.sub,
-      fileId,
-    );
+    try {
+      // Delete file from database
+      this.storageService.deleteFileFromDatabase(req.user.sub, fileKey);
 
-    if (dbRecord.deletedCount === 0) {
-      throw new Error();
-    }
-    // Delete file from storage
-    const deletedBinary = await this.storageService.deleteFile(fileId);
-    console.log({ deletedBinary });
-    if (!deletedBinary) {
-      throw new Error();
+      // Delete file from storage
+      const deletedBlob = await this.storageService.deleteFile(fileKey);
+      if (!deletedBlob) {
+        throw new Error();
+      }
+    } catch (error) {
+      throw new ApiExceptionBuilder(HttpStatus.NOT_FOUND)
+        .message(error)
+        .build();
     }
 
     return new ApiResponseBuilder().message('Deleted').build();
-  }
-
-  @Get('files')
-  @HttpCode(HttpStatus.OK)
-  @ApiDocs({
-    operationSummary: 'Get all files from user storage',
-    operationDescription:
-      '## Get all files from user storage \n' +
-      '📥 Receive ➡️ JWT Token (Header🔒), skip (Query), limit (Query) <br/> ' +
-      '📦 Returns ➡️ Array of files',
-    responseStatus: HttpStatus.OK,
-    responseDescription: 'OK',
-    responseType: DocumentResponseArray,
-    queryParameters: [
-      {
-        name: 'skip',
-        required: false,
-        description: 'Number of documents to skip',
-      },
-      {
-        name: 'limit',
-        required: false,
-        description: 'Max quantity of documents per request',
-      },
-    ],
-  })
-  async getAllMyFiles(
-    @Request() req: JwtPayload,
-    @Query('skip') skip?: number,
-    @Query('limit') limit?: number,
-  ): Promise<DocumentResponseArray | ApiResponseType> {
-    const data = await this.storageService.getAllMyFiles(
-      req.user.sub,
-      skip,
-      limit,
-    );
-    if (!data) {
-      throw new FileNotFoundException();
-    }
-    return new ApiResponseBuilder().data(data).build();
-  }
-
-  @Get('files/shared')
-  @HttpCode(HttpStatus.OK)
-  @ApiDocs({
-    operationSummary: 'Get all files shared with user',
-    operationDescription:
-      '## Get all files shared with user \n' +
-      '📥 Receive ➡️ JWT Token (Header🔒), skip (Query), limit (Query) <br/> ' +
-      '📦 Returns ➡️ Array of files',
-    responseStatus: HttpStatus.OK,
-    responseDescription: 'OK: Returns an array of documents',
-    responseType: DocumentResponseArray,
-    queryParameters: [
-      {
-        name: 'skip',
-        required: false,
-        description: 'Number of documents to skip',
-      },
-      {
-        name: 'limit',
-        required: false,
-        description: 'Max quantity of documents per request',
-      },
-    ],
-  })
-  async getAllSharedFiles(
-    @Request() req: JwtPayload,
-    @Query('skip') skip: number,
-    @Query('limit') limit: number,
-  ): Promise<DocumentResponseArray | ApiResponseType> {
-    const data = await this.storageService.getAllSharedFiles(
-      req.user.sub,
-      skip,
-      limit,
-    );
-    if (!data) {
-      throw new FileNotFoundException();
-    }
-
-    return new ApiResponseBuilder().data(data).build();
   }
 
   @Get('files/:fileId')
@@ -322,7 +248,7 @@ export class StorageController {
     return new ApiResponseBuilder().data({ shareId }).build();
   }
 
-  @Get('files/:fileId/share/:shareId')
+  @Get('files/:fileKey/share/:shareId')
   @HttpCode(HttpStatus.OK)
   @ApiDocs({
     operationSummary: 'Get a file from a share',
@@ -336,14 +262,14 @@ export class StorageController {
   })
   async getShare(
     @Request() req: JwtPayload,
-    @Param('fileId') fileId: string,
+    @Param('fileKey') fileKey: string,
     @Param('shareId') shareId: string,
   ): Promise<DocumentResponse | ApiResponseType> {
     const dbRecord = await this.storageService.getFileByShareId(shareId);
     if (!dbRecord) {
       throw new FileNotFoundException();
     }
-    if (dbRecord.fileKey !== fileId) {
+    if (dbRecord.fileKey !== fileKey) {
       throw new FileNotFoundException();
     }
 
@@ -360,7 +286,9 @@ export class StorageController {
     }
 
     // append req.user.userId to storageFileDocument
-    await this.storageService.addUserToFileDocument(fileId, req.user.sub);
+    this.storageService.addUserToFileDocument(fileKey, req.user.sub);
+
+    this.storageService.addFileToSharedFolder(dbRecord._id, req.user.sub);
 
     return new ApiResponseBuilder().data(dbRecord).build();
   }
@@ -395,11 +323,13 @@ export class StorageController {
     }
 
     // delete the :userId (from the share) from the storageFileDocument of the user that is getting the file
-    await this.storageService.removeUserFromFileDocument(fileId, userId);
+    this.storageService.removeUserFromFileDocument(fileId, userId);
+    this.storageService.removeFileFromSharedFolder(dbRecord._id, userId);
+
     return new ApiResponseBuilder().message('Revoked Access').build();
   }
 
-  @Delete('files/:fileId/share')
+  @Delete('files/:fileKey/share')
   @HttpCode(HttpStatus.OK)
   @ApiDocs({
     operationSummary: 'Delete a share',
@@ -413,10 +343,10 @@ export class StorageController {
   })
   async deleteShare(
     @Request() req: JwtPayload,
-    @Param('fileId') fileId: string,
+    @Param('fileKey') fileKey: string,
   ): Promise<ApiResponseType> {
     let deletedCounter = 0;
-    const dbRecord = await this.storageService.getFile(req.user.sub, fileId);
+    const dbRecord = await this.storageService.getFile(req.user.sub, fileKey);
     if (!dbRecord) {
       throw new FileNotFoundException();
     }

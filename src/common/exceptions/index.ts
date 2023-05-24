@@ -11,7 +11,7 @@ export class ApiException extends HttpException {
         }
       }
     }
-    super({ succes: false, message: exception.message }, exception.status);
+    super({ success: false, message: exception.message }, exception.status);
   }
 }
 

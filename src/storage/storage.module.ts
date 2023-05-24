@@ -4,6 +4,10 @@ import { StorageService } from './services/storage.service';
 import { StorageModule as configStorageModule } from '../config/storage/storage.module';
 import { MongooseModule } from '@nestjs/mongoose';
 import { StorageFile, StorageFileSchema } from './entities/storage.entity';
+import { FoldersService } from '../folders/services/folders.service';
+import { Folder, FolderSchema } from '../folders/entities/folder.entity';
+import { UsersService } from '../users/services/users.service';
+import { User, UserSchema } from '../users/entities/user.entity';
 
 @Module({
   imports: [
@@ -12,16 +16,18 @@ import { StorageFile, StorageFileSchema } from './entities/storage.entity';
         name: StorageFile.name,
         schema: StorageFileSchema,
       },
+      {
+        name: Folder.name,
+        schema: FolderSchema,
+      },
+      {
+        name: User.name,
+        schema: UserSchema,
+      },
     ]),
     configStorageModule,
   ],
   controllers: [StorageController],
-  providers: [StorageService],
+  providers: [StorageService, FoldersService, UsersService],
 })
 export class StorageModule {}
-
-// TODO
-// On the storage.service.ts implement the following methods:
-// - Inject('STORAGE') private storage: Storage, // Injecting the storage service
-// - Create storage entity:
-//    - InjectModel(Storage.name) private storageModel: Model<Storage>, // Injecting the storage model
