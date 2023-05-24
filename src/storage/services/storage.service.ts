@@ -11,8 +11,6 @@ import { v4 as uuid4 } from 'uuid';
 import { StorageFile } from '../entities/storage.entity';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { FoldersService } from '../../folders/services/folders.service';
-import { Types } from 'mongoose';
-import { FileNotFoundException } from '../../common/exceptions';
 
 @Injectable()
 export class StorageService {

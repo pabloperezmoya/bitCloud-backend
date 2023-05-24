@@ -1,12 +1,7 @@
 import * as bcrypt from 'bcrypt';
 import { Model } from 'mongoose';
 
-import {
-  ConflictException,
-  HttpException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 
 import { CreateUserDTO, UpdateUserDTO } from '../dto/user.dto';

@@ -2,15 +2,15 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { UsersController } from './users.controller';
 import { UsersService } from '../services/users.service';
 
-const mockUser = {
-  name: 'Alice',
-  email: 'alice@email.com',
-  password: '12345678',
-};
+// const mockUser = {
+//   name: 'Alice',
+//   email: 'alice@email.com',
+//   password: '12345678',
+// };
 
 describe('UsersController', () => {
   let controller: UsersController;
-  let service: UsersService;
+  //let service: UsersService;
   const userArray = [
     {
       name: 'Alice',
@@ -39,7 +39,7 @@ describe('UsersController', () => {
     }).compile();
 
     controller = module.get<UsersController>(UsersController);
-    service = module.get<UsersService>(UsersService);
+    //service = module.get<UsersService>(UsersService);
   });
 
   it('should be defined', () => {

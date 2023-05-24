@@ -7,7 +7,6 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Folder } from '../entities/folder.entity';
 import { Model } from 'mongoose';
 import { UsersService } from '../../users/services/users.service';
-import { Types } from 'mongoose';
 import { DefaultFolders } from '../../auth/constants';
 
 @Injectable()
@@ -37,7 +36,7 @@ export class FoldersService {
   }
 
   async addFileToFolder(folderId: string, fileId: string) {
-    const folder = await this.folderModel.findByIdAndUpdate(folderId, {
+    await this.folderModel.findByIdAndUpdate(folderId, {
       $push: { files: fileId },
     });
   }

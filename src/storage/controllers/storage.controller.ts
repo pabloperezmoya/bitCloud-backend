@@ -17,7 +17,7 @@ import {
   Patch,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { ApiBearerAuth, ApiProperty, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import type { Response } from 'express';
 
 import { StorageService } from '../services/storage.service';
@@ -26,7 +26,6 @@ import {
   ApiResponse as ApiResponseType,
   UUIDResponse,
   DocumentResponse,
-  DocumentResponseArray,
   URLResponse,
 } from '../../common/responses';
 import { ApiResponseBuilder } from '../../common/responses';
