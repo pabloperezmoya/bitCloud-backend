@@ -42,6 +42,15 @@ export class FileNotFoundException extends ApiException {
   }
 }
 
+export class UnauthorizedException extends ApiException {
+  constructor() {
+    super({
+      status: HttpStatus.UNAUTHORIZED,
+      message: 'Not Authorized',
+    });
+  }
+}
+
 export class InternalServerErrorException extends ApiException {
   constructor(message?: string) {
     super({

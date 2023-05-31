@@ -1,5 +1,5 @@
 import { Express } from 'express';
-
+import * as fs from 'fs';
 import {
   Controller,
   Delete,
@@ -9,12 +9,14 @@ import {
   Param,
   Post,
   Query,
-  Request,
   StreamableFile,
   UploadedFile,
   UseInterceptors,
   Res,
   Patch,
+  UnauthorizedException,
+  Request,
+  InternalServerErrorException,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
@@ -36,6 +38,7 @@ import {
 import { ApiDocs } from '../../common/apiDoc/apidocs.decoratos';
 import { FileUploadDto } from '../dtos';
 import { FolderNamePipe } from '../../folders/pipes/pipes.pipe';
+import { Readable } from 'stream';
 
 @Controller('storage')
 @ApiTags('storage')
@@ -110,6 +113,25 @@ export class StorageController {
     @Param('fileKey') fileKey: string,
   ): Promise<ApiResponseType> {
     try {
+      const dbRecord = await this.storageService.getFile(fileKey);
+
+      if (dbRecord.userId !== req.user.sub) {
+        // Check if the file is shared with the user
+        if (dbRecord.sharedWith.includes(req.user.sub)) {
+          // delete userId from sharedWith
+          this.storageService.removeUserFromFileDocument(fileKey, req.user.sub);
+          this.storageService.removeFileFromSharedFolder(
+            dbRecord._id,
+            req.user.sub,
+          );
+          return new ApiResponseBuilder()
+            .message('Deleted shared file')
+            .build();
+        } else {
+          throw new UnauthorizedException();
+        }
+      }
+
       // Delete file from database
       this.storageService.deleteFileFromDatabase(req.user.sub, fileKey);
 
@@ -143,9 +165,15 @@ export class StorageController {
     @Request() req: JwtPayload,
     @Param('fileId') fileId: string,
   ): Promise<DocumentResponse | ApiResponseType> {
-    const dbRecord = await this.storageService.getFile(req.user.sub, fileId);
+    const dbRecord = await this.storageService.getFile(fileId);
     if (!dbRecord) {
       throw new FileNotFoundException();
+    }
+    if (
+      dbRecord.userId !== req.user.sub &&
+      !dbRecord.sharedWith.includes(req.user.sub)
+    ) {
+      throw new UnauthorizedException();
     }
     return new ApiResponseBuilder().data(dbRecord).build();
   }
@@ -158,7 +186,7 @@ export class StorageController {
       '## Stream a file from user storage \n' +
       '📥 Receive ➡️ JWT Token (Header🔒), fileId (Param) <br/> ' +
       '📦 Returns ➡️ FileStream',
-    responseStatus: HttpStatus.OK,
+    responseStatus: HttpStatus.PARTIAL_CONTENT,
     responseDescription: 'OK',
     responseType: StreamableFile,
   })
@@ -167,18 +195,26 @@ export class StorageController {
     @Param('fileId') fileId: string,
     @Res({ passthrough: true }) res: Response,
   ): Promise<StreamableFile> {
-    const dbRecord = await this.storageService.getFile(req.user.sub, fileId);
+    const dbRecord = await this.storageService.getFile(fileId);
+
     if (!dbRecord) {
       throw new FileNotFoundException();
+    }
+
+    if (
+      dbRecord.userId !== req.user.sub &&
+      !dbRecord.sharedWith.includes(req.user.sub)
+    ) {
+      throw new UnauthorizedException();
     }
 
     const stream = await this.storageService.streamFile(dbRecord.fileKey);
     res.set({
       'Content-Type': dbRecord.mimetype,
+      'Content-Length': dbRecord.size,
+      'Content-Range': `bytes 0-${dbRecord.size - 1}/${dbRecord.size}`,
     });
-    return new StreamableFile(
-      (await stream.transformToByteArray()) as Uint8Array,
-    );
+    return new StreamableFile(await stream.transformToByteArray());
   }
 
   @Get('files/:fileId/public')
@@ -205,9 +241,15 @@ export class StorageController {
     @Param('fileId') fileId: string,
     @Query('expiresIn') expiresIn: number,
   ): Promise<URLResponse | ApiResponseType> {
-    const dbRecord = await this.storageService.getFile(req.user.sub, fileId);
+    const dbRecord = await this.storageService.getFile(fileId);
     if (!dbRecord) {
       throw new FileNotFoundException();
+    }
+    if (
+      dbRecord.userId !== req.user.sub ||
+      !dbRecord.sharedWith.includes(req.user.sub)
+    ) {
+      throw new UnauthorizedException();
     }
     const publicUrl = await this.storageService.makeFilePublic(
       dbRecord.fileKey,
@@ -232,9 +274,12 @@ export class StorageController {
     @Request() req: JwtPayload,
     @Param('fileId') fileId: string,
   ): Promise<UUIDResponse | ApiResponseType> {
-    const dbRecord = await this.storageService.getFile(req.user.sub, fileId);
+    const dbRecord = await this.storageService.getFile(fileId);
     if (!dbRecord) {
       throw new FileNotFoundException();
+    }
+    if (dbRecord.userId !== req.user.sub) {
+      throw new UnauthorizedException();
     }
     // check if already has a shareId
     if (dbRecord.shareId) {
@@ -309,9 +354,13 @@ export class StorageController {
     @Param('fileId') fileId: string,
     @Param('userId') userId: string,
   ): Promise<ApiResponseType> {
-    const dbRecord = await this.storageService.getFile(req.user.sub, fileId);
+    const dbRecord = await this.storageService.getFile(fileId);
     if (!dbRecord) {
       throw new FileNotFoundException();
+    }
+
+    if (dbRecord.userId !== req.user.sub) {
+      throw new UnauthorizedException();
     }
 
     // Check if user has access to file
@@ -345,10 +394,14 @@ export class StorageController {
     @Param('fileKey') fileKey: string,
   ): Promise<ApiResponseType> {
     let deletedCounter = 0;
-    const dbRecord = await this.storageService.getFile(req.user.sub, fileKey);
+    const dbRecord = await this.storageService.getFile(fileKey);
     if (!dbRecord) {
       throw new FileNotFoundException();
     }
+    if (dbRecord.userId !== req.user.sub) {
+      throw new UnauthorizedException();
+    }
+
     // If shareId already exists, delete it
     if (dbRecord?.shareId) {
       // delete the shareId from the storageFileDocument of the user that is getting the file
@@ -366,5 +419,24 @@ export class StorageController {
     return new ApiResponseBuilder()
       .message(`${deletedCounter} resources deleted`)
       .build();
+  }
+
+  @Delete('folder/:folderName')
+  @ApiDocs({
+    operationSummary: 'Delete a folder ',
+    operationDescription:
+      '## Delete a folder for a user by a userId embedded in the JWT token \n' +
+      '📥 Receive ➡️ JWT Token (Header🔒) + folderName parameter <br/> ' +
+      '📦 Returns ➡️ FileDocument',
+    responseStatus: HttpStatus.OK,
+    responseDescription: 'OK',
+  })
+  async deleteUserFolder(
+    @Request() req: JwtPayload,
+    @Param('folderName', FolderNamePipe) folderName: string,
+  ) {
+    await this.storageService.deleteFolder(req.user.sub, folderName);
+
+    return new ApiResponseBuilder().build();
   }
 }

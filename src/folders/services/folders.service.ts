@@ -1,7 +1,9 @@
 import {
   ConflictException,
+  Inject,
   Injectable,
   NotFoundException,
+  forwardRef,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Folder } from '../entities/folder.entity';
@@ -56,10 +58,14 @@ export class FoldersService {
     });
   }
 
-  async getFolder(userId: string, folderName) {
+  async getFolder(userId: string, folderName, populate = false) {
     const folder = await this.getFolderByName(folderName, userId);
     if (!folder) {
       throw new NotFoundException('Folder not found');
+    }
+
+    if (populate) {
+      return folder.populate('files');
     }
     return folder;
   }
@@ -91,25 +97,6 @@ export class FoldersService {
     user.folders.push(folder._id);
     user.save();
     return folder._id;
-  }
-
-  async deleteUserFolder(userId: string, folderName: string) {
-    const user = await this.usersService.getUser({ userId });
-    if (!user) {
-      throw new NotFoundException('User not found');
-    }
-    // verify if folder exists
-    const folderExists = await this.checkIfFolderExists(folderName, userId);
-
-    if (!folderExists) {
-      throw new NotFoundException('Folder not found');
-    }
-
-    // delete folder
-    const folder = await this.deleteFolder(folderName, userId);
-
-    // remove folder from user
-    user.updateOne({ $pull: { folders: folder._id } }).exec();
   }
 
   async createFolder(folderName: string, ownerId: string) {

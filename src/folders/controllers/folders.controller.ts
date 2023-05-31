@@ -78,10 +78,15 @@ export class FoldersController {
   async getUserFolder(
     @Request() req: JwtPayload,
     @Param('folderName', FolderNamePipe) folderName: string,
+    @Query('populate') populate?: boolean,
   ) {
     let folder;
     try {
-      folder = await this.foldersService.getFolder(req.user.sub, folderName);
+      folder = await this.foldersService.getFolder(
+        req.user.sub,
+        folderName,
+        populate,
+      );
     } catch (err) {
       throw new InternalServerErrorException(err);
     }
@@ -120,27 +125,5 @@ export class FoldersController {
     }
 
     return new ApiResponseBuilder().data({ folderId }).build();
-  }
-
-  @Delete(':folderName')
-  @ApiDocs({
-    operationSummary: 'Delete a folder for a user by a userId',
-    operationDescription:
-      '## Delete a folder for a user by a userId embedded in the JWT token \n' +
-      '📥 Receive ➡️ JWT Token (Header🔒) + folderName parameter <br/> ' +
-      '📦 Returns ➡️ FileDocument',
-    responseStatus: HttpStatus.OK,
-    responseDescription: 'OK',
-  })
-  async deleteUserFolder(
-    @Request() req: JwtPayload,
-    @Param('folderName', FolderNamePipe) folderName: string,
-  ) {
-    try {
-      await this.foldersService.deleteUserFolder(req.user.sub, folderName);
-    } catch (err) {
-      throw new InternalServerErrorException(err);
-    }
-    return new ApiResponseBuilder().build();
   }
 }
