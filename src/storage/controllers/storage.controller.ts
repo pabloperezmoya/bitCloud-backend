@@ -201,11 +201,10 @@ export class StorageController {
       throw new FileNotFoundException();
     }
 
-    if (
-      dbRecord.userId !== req.user.sub &&
-      !dbRecord.sharedWith.includes(req.user.sub)
-    ) {
-      throw new UnauthorizedException();
+    if (dbRecord.userId !== req.user.sub) {
+      if (!dbRecord.sharedWith.includes(req.user.sub)) {
+        throw new UnauthorizedException('File not shared with user');
+      }
     }
 
     const stream = await this.storageService.streamFile(dbRecord.fileKey);
