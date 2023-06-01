@@ -206,14 +206,19 @@ export class StorageController {
         throw new UnauthorizedException('File not shared with user');
       }
     }
-
-    const stream = await this.storageService.streamFile(dbRecord.fileKey);
-    res.set({
-      'Content-Type': dbRecord.mimetype,
-      'Content-Length': dbRecord.size,
-      'Content-Range': `bytes 0-${dbRecord.size - 1}/${dbRecord.size}`,
-    });
-    return new StreamableFile(await stream.transformToByteArray());
+    try {
+      const stream = await this.storageService.streamFile(dbRecord.fileKey);
+      res.set({
+        'Content-Type': dbRecord.mimetype,
+        'Content-Length': dbRecord.size,
+        'Content-Range': `bytes 0-${dbRecord.size - 1}/${dbRecord.size}`,
+      });
+      return new StreamableFile(await stream.transformToByteArray());
+    } catch (err) {
+      throw new ApiExceptionBuilder(HttpStatus.INTERNAL_SERVER_ERROR)
+        .message(err.message)
+        .build();
+    }
   }
 
   @Get('files/:fileId/public')
